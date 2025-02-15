@@ -54,3 +54,15 @@ export const getAreaByCode = async (req, res) => {
       .json({ message: "Terjadi kesalahan saat mencari area" });
   }
 };
+
+export const getAllArea = async (req, res) => {
+  try {
+    const area = await Area.find();
+    return res.status(200).json({ message: "Get all area", data: area });
+  } catch (error) {
+    console.error(error);
+    return res
+      .status(500)
+      .json({ message: "Terjadi kesalahan saat mencari data" });
+  }
+};

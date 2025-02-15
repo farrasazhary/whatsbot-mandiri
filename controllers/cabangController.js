@@ -50,3 +50,63 @@ export const createCabang = async (req, res) => {
       .json({ message: "Terjadi kesalahan saat menyimpan data" });
   }
 };
+
+// Fungsi untuk mendapatkan semua data Cabang
+export const getAllCabang = async (req, res) => {
+  try {
+    const cabang = await Cabang.find();
+    return res.status(200).json({ message: "Get all Cabang", data: cabang });
+  } catch (error) {
+    console.error(error);
+    return res
+      .status(500)
+      .json({ message: "Terjadi kesalahan saat mencari data" });
+  }
+};
+
+export const getCabangWithProduk = async (req, res) => {
+  try {
+    const cabang = await Cabang.find().populate("produk_ids");
+    return res.status(200).json({ message: "Get all Cabang", data: cabang });
+  } catch (error) {
+    console.error(error);
+    return res
+      .status(500)
+      .json({ message: "Terjadi kesalahan saat mencari data" });
+  }
+};
+
+export const getCabangByCode = async (req, res) => {
+  const { kode_cabang } = req.params;
+
+  try {
+    // Mencari cabang berdasarkan kode_cabang
+    const cabang = await Cabang.findOne({ kode_cabang }); // Menggunakan kode_cabang
+
+    // Jika cabang tidak ditemukan, kirim error
+    if (!cabang) {
+      return res.status(404).json({ message: "Cabang tidak ditemukan" });
+    }
+
+    // Mengirim respons sukses
+    return res.status(200).json({ cabang });
+  } catch (error) {
+    console.error(error);
+    return res
+      .status(500)
+      .json({ message: "Terjadi kesalahan saat mencari cabang" });
+  }
+};
+
+export const getCabangByArea = async (req, res) => {
+  const { area_id } = req.params;
+  try {
+    const cabang = await Cabang.find({ area_id });
+    return res.status(200).json({ data: cabang });
+  } catch (error) {
+    console.error(error);
+    return res
+      .status(500)
+      .json({ message: "Terjadi kesalahan saat mengambil data cabang" });
+  }
+};
