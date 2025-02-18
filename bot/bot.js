@@ -11,6 +11,7 @@ const client = new Client({
 
 // Menampilkan QR code untuk login ke WhatsApp Web (gunakan aplikasi WhatsApp untuk memindai)
 // Menyimpan sesi pengguna
+let lastOnlineTime = new Date(); // Catat waktu terakhir bot online
 let userState = {}; // Menyimpan status percakapan per pengguna
 
 // Menampilkan QR code untuk login ke WhatsApp Web (gunakan aplikasi WhatsApp untuk memindai)
@@ -21,6 +22,7 @@ client.on("qr", (qr) => {
 // Ketika client sudah siap
 client.on("ready", async () => {
   console.log("Whatsapp web terhubung!");
+  lastOnlineTime = new Date();
 });
 
 // Ketika pesan masuk
@@ -29,9 +31,13 @@ client.on("message", async (msg) => {
   const userId = msg.from; // ID pengguna yang mengirim pesan
 
   console.log("Received message:", userMessage); // Log pesan yang diterima
+  if (new Date(msg.timestamp * 1000) < lastOnlineTime) {
+    console.log("Mengabaikan pesan karena diterima ketika bot offline.");
+    return; // Abaikan pesan yang diterima selama bot offline
+  }
 
   // Jika pengguna mengetik !menu, mulai percakapan
-  if (userMessage === "!menu") {
+  else if (userMessage === "!menu") {
     userState[userId] = { stage: "category" }; // Menyimpan status pengguna
     const areas = await fetchData("area"); // Ambil data area dari API
 
@@ -137,11 +143,11 @@ client.on("message", async (msg) => {
 
     // Menampilkan detail produk beserta actual, commit, target, dan growth
     const produkDetailMessage = `
-        **Detail Produk:**
+        *Detail Produk:*
         Nama Produk: ${capitalizeFirstLetter(selectedProduk.nama_produk)}
         Nama Cabang: ${capitalizeFirstLetter(selectedProduk.nama_cabang)}
 
-        **Actual:**
+        *Actual:*
         - 31/01/2024: ${selectedProduk.actual.act_jan_prev || "Tidak tersedia"}
         - 31/12/2024: ${selectedProduk.actual.act_des_prev || "Tidak tersedia"}
         - 25 Jan 2025 - pkl 20.00: ${
@@ -151,7 +157,7 @@ client.on("message", async (msg) => {
           selectedProduk.actual.current_date_after || "Tidak tersedia"
         }
 
-        **Commitment:**
+        *Commitment:*
         - Komitmen Jan '25: ${
           selectedProduk.commit.current_commitment || "Tidak tersedia"
         }
@@ -162,7 +168,7 @@ client.on("message", async (msg) => {
           selectedProduk.commit.gap_commitment || "Tidak tersedia"
         }
 
-        **Target:**
+        *Target:*
         - Target Jan'25: ${
           selectedProduk.target.current_target || "Tidak tersedia"
         }
@@ -173,7 +179,7 @@ client.on("message", async (msg) => {
           selectedProduk.target.gap_target || "Tidak tersedia"
         }
 
-        **Growth:**
+        *Growth:*
         - Mutasi: ${selectedProduk.growth.monthly_change || "Tidak tersedia"}
         - MtD/YtD: ${
           selectedProduk.growth.monthly_to_date_ytd || "Tidak tersedia"
